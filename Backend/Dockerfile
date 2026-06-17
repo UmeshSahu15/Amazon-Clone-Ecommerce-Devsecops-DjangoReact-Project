@@ -5,6 +5,12 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    default-libmysqlclient-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY EcommerceInventory/ .
 
 RUN pip install --upgrade pip && \
