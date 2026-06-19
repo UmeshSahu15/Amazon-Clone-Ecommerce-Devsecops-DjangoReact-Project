@@ -320,9 +320,10 @@ GitHub was used as the source code repository.
 * Branch Management
 
 ### Screenshot
+### Screenshot
+<img width="1920" height="1080" alt="2026-06-19 (4)" src="https://github.com/user-attachments/assets/647a69a0-f595-4c1f-ab15-867ed8557d92" />
 
-![GitHub Repository](images/github-repository.png)
-
+![Screenshot](https://raw.githubusercontent.com/UmeshSahu15/Amazon-Clone-Ecommerce-Devsecops-DjangoReact-Project/main/Project_Screenshot/2026-06-19%20(1).png)
 ---
 
 # 🔄 Jenkins
