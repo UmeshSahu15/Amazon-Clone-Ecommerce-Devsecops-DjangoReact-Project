@@ -1,7 +1,6 @@
 
 <div align="center">
 
-<img width="1536" height="1024" alt="ChatGPT Image Jun 19, 2026, 12_51_00 PM" src="https://github.com/user-attachments/assets/f271bc1b-c5c4-4d51-a348-02ac30061c1c" />
 
 # 🚀 Amazon Clone Ecommerce Inventory Management System
 
@@ -19,6 +18,7 @@
 <img src="https://img.shields.io/badge/Grafana-Dashboard-F46800?style=for-the-badge">
 
 </div>
+<img width="1536" height="1024" alt="ChatGPT Image Jun 19, 2026, 12_51_00 PM" src="https://github.com/user-attachments/assets/f271bc1b-c5c4-4d51-a348-02ac30061c1c" />
 
 ---
 # 🏗️ Solution Architecture
@@ -26,235 +26,235 @@
 The following architecture represents the complete end-to-end DevSecOps workflow implemented for the Amazon Clone Ecommerce Inventory Management System.
 
 ```text
-┌──────────────────────────────────────────────────────────────┐
-│                      AMAZON CLONE PROJECT                    │
-│              End-to-End DevSecOps CI/CD Pipeline             │
-└──────────────────────────────────────────────────────────────┘
-
-                        ┌─────────────────┐
-                        │   Developer     │
-                        └────────┬────────┘
-                                 │
-                                 │ Code Push
-                                 ▼
-                        ┌─────────────────┐
-                        │ GitHub Repo     │
-                        │ Main Branch     │
-                        └────────┬────────┘
-                                 │
-                                 │ Webhook Trigger
-                                 ▼
-
-══════════════════════════════════════════════════════════════════════
-                     JENKINS CI/CD SERVER
-                        (65.1.253.185)
-══════════════════════════════════════════════════════════════════════
-
-                        ┌─────────────────┐
-                        │ Jenkins         │
-                        │ Pipeline Start  │
-                        └────────┬────────┘
-                                 │
-                                 ▼
-
-                    ┌─────────────────────┐
-                    │ Clean Workspace     │
-                    └─────────┬───────────┘
-                              │
-                              ▼
-
-                    ┌─────────────────────┐
-                    │ Git Checkout        │
-                    └─────────┬───────────┘
-                              │
-                              ▼
-
-                    ┌─────────────────────┐
-                    │ SonarQube Analysis  │
-                    └─────────┬───────────┘
-                              │
-                              ▼
-
-                    ┌─────────────────────┐
-                    │ Quality Gate        │
-                    └─────────┬───────────┘
-                              │
-                              ▼
-
-        ┌─────────────────────┼─────────────────────┐
-        │                     │                     │
-        ▼                     ▼                     ▼
-
- ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
- │ npm Audit   │     │ OWASP DC     │     │ Trivy FS    │
- │ Frontend    │     │ Vulnerability│     │ Scan        │
- └──────┬──────┘     └──────┬───────┘     └──────┬──────┘
-        │                   │                    │
-        └───────────────────┼────────────────────┘
-                            │
-                            ▼
-
-                  ┌──────────────────────┐
-                  │ Security Validation  │
-                  └──────────┬───────────┘
-                             │
-                             ▼
-
-══════════════════════════════════════════════════════════════════════
-                         DOCKER STAGE
-══════════════════════════════════════════════════════════════════════
-
-                 ┌────────────────────────┐
-                 │ Build Backend Image    │
-                 │ amazon-backend         │
-                 └──────────┬─────────────┘
-                            │
-                            ▼
-
-                 ┌────────────────────────┐
-                 │ Build Frontend Image   │
-                 │ amazon-frontend        │
-                 └──────────┬─────────────┘
-                            │
-                            ▼
-
-        ┌───────────────────┼───────────────────┐
-        │                                       │
-        ▼                                       ▼
-
-┌──────────────────┐                 ┌──────────────────┐
-│ Trivy Backend    │                 │ Trivy Frontend   │
-│ Image Scan       │                 │ Image Scan       │
-└─────────┬────────┘                 └────────┬─────────┘
-          │                                   │
-          └─────────────────┬─────────────────┘
-                            │
-                            ▼
-
-                  ┌─────────────────────┐
-                  │ Docker Hub Push     │
-                  └─────────┬───────────┘
-                            │
-                            ▼
-
-        6378257556/amazon-backend:latest
-        6378257556/amazon-frontend:latest
-
-══════════════════════════════════════════════════════════════════════
-                       DEPLOYMENT STAGE
-══════════════════════════════════════════════════════════════════════
-
-                            │
-                            │ SSH using jenkins-k3s Key
-                            ▼
-
-                  ┌──────────────────────┐
-                  │ Kubernetes Validation│
-                  └──────────┬───────────┘
-                             │
-                             ▼
-
-                  ┌──────────────────────┐
-                  │ Rollout Restart      │
-                  │ Backend Deployment   │
-                  └──────────┬───────────┘
-                             │
-                             ▼
-
-                  ┌──────────────────────┐
-                  │ Rollout Restart      │
-                  │ Frontend Deployment  │
-                  └──────────┬───────────┘
-                             │
-                             ▼
-
-                  ┌──────────────────────┐
-                  │ Verify Deployments   │
-                  └──────────┬───────────┘
-                             │
-                             ▼
-
-                  ┌──────────────────────┐
-                  │ Verify HPA           │
-                  └──────────┬───────────┘
-                             │
-                             ▼
-
-                  ┌──────────────────────┐
-                  │ Smoke Testing        │
-                  └──────────┬───────────┘
-                             │
-                             ▼
-
-══════════════════════════════════════════════════════════════════════
-                        K3s KUBERNETES
-                          (15.206.14.85)
-══════════════════════════════════════════════════════════════════════
-
-                    amazon-clone namespace
-
-        amazon-frontend Deployment
-                    │
-                    ▼
-            Frontend Service
-                    │
-                    ▼
-             NGINX Ingress
-                    │
-                    ▼
-          http://15.206.14.85
-                    │
-                    ▼
-             Amazon Clone UI
-                    │
-                    ▼
-         amazon-backend Deployment
-                    │
-                    ▼
-            Backend Service
-
-══════════════════════════════════════════════════════════════════════
-                    AUTO SCALING (HPA)
-══════════════════════════════════════════════════════════════════════
-
-amazon-frontend HPA
-Min: 1 | Max: 5
-
-amazon-backend HPA
-Min: 1 | Max: 5
-
-══════════════════════════════════════════════════════════════════════
-                     MONITORING STACK
-══════════════════════════════════════════════════════════════════════
-
-Node Exporter
-      │
-      ▼
-kube-state-metrics
-      │
-      ▼
-Prometheus
-      │
-      ▼
-Grafana
-
-Grafana:
-http://15.206.14.85/grafana
-
-Prometheus:
-http://15.206.14.85:31907
-
-Node Exporter:
-http://15.206.14.85:30779/metrics
-
-══════════════════════════════════════════════════════════════════════
-                     NOTIFICATION STAGE
-══════════════════════════════════════════════════════════════════════
-
-Email Success
-Email Failure
-Email Unstable
-```
+                                        ┌──────────────────────────────────────────────────────────────┐
+                                        │                      AMAZON CLONE PROJECT                    │
+                                        │              End-to-End DevSecOps CI/CD Pipeline             │
+                                        └──────────────────────────────────────────────────────────────┘
+                                        
+                                                                ┌─────────────────┐
+                                                                │   Developer     │
+                                                                └────────┬────────┘
+                                                                         │
+                                                                         │ Code Push
+                                                                         ▼
+                                                                ┌─────────────────┐
+                                                                │ GitHub Repo     │
+                                                                │ Main Branch     │
+                                                                └────────┬────────┘
+                                                                         │
+                                                                         │ Webhook Trigger
+                                                                         ▼
+                                        
+                                        ══════════════════════════════════════════════════════════════════════
+                                                             JENKINS CI/CD SERVER
+                                                                (65.1.253.185)
+                                        ══════════════════════════════════════════════════════════════════════
+                                        
+                                                                ┌─────────────────┐
+                                                                │ Jenkins         │
+                                                                │ Pipeline Start  │
+                                                                └────────┬────────┘
+                                                                         │
+                                                                         ▼
+                                        
+                                                              ┌─────────────────────┐
+                                                              │ Clean Workspace     │
+                                                              └─────────┬───────────┘
+                                                                        │
+                                                                        ▼
+                                        
+                                                              ┌─────────────────────┐
+                                                              │ Git Checkout        │
+                                                              └─────────┬───────────┘
+                                                                        │
+                                                                        ▼
+                                          
+                                                              ┌─────────────────────┐
+                                                              │ SonarQube Analysis  │
+                                                              └─────────┬───────────┘
+                                                                        │
+                                                                        ▼
+                                          
+                                                              ┌─────────────────────┐
+                                                              │ Quality Gate        │
+                                                              └─────────┬───────────┘
+                                                                        │
+                                                                        ▼
+                                          
+                                                  ┌─────────────────────┼─────────────────────┐
+                                                  │                     │                     │
+                                                  ▼                     ▼                     ▼
+                                          
+                                           ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+                                           │ npm Audit   │     │ OWASP DC     │     │ Trivy FS    │
+                                           │ Frontend    │     │ Vulnerability│     │ Scan        │
+                                           └──────┬──────┘     └──────┬───────┘     └──────┬──────┘
+                                                  │                   │                    │
+                                                  └───────────────────┼────────────────────┘
+                                                                      │
+                                                                      ▼
+                                          
+                                                            ┌──────────────────────┐
+                                                            │ Security Validation  │
+                                                            └──────────┬───────────┘
+                                                                       │
+                                                                       ▼
+                                        
+                                        ══════════════════════════════════════════════════════════════════════
+                                                                 DOCKER STAGE
+                                        ══════════════════════════════════════════════════════════════════════
+                                        
+                                                             ┌────────────────────────┐
+                                                             │ Build Backend Image    │
+                                                             │ amazon-backend         │
+                                                             └──────────┬─────────────┘
+                                                                        │
+                                                                        ▼
+                                            
+                                                             ┌────────────────────────┐
+                                                             │ Build Frontend Image   │
+                                                             │ amazon-frontend        │
+                                                             └──────────┬─────────────┘
+                                                                        │
+                                                                        ▼
+                                            
+                                                    ┌───────────────────┼───────────────────┐
+                                                    │                                       │
+                                                    ▼                                       ▼
+                                            
+                                            ┌──────────────────┐                 ┌──────────────────┐
+                                            │ Trivy Backend    │                 │ Trivy Frontend   │
+                                            │ Image Scan       │                 │ Image Scan       │
+                                            └─────────┬────────┘                 └────────┬─────────┘
+                                                      │                                   │
+                                                      └─────────────────┬─────────────────┘
+                                                                        │
+                                                                        ▼
+                                            
+                                                              ┌─────────────────────┐
+                                                              │ Docker Hub Push     │
+                                                              └─────────┬───────────┘
+                                                                        │
+                                                                        ▼
+                                        
+                                                      6378257556/amazon-backend:latest
+                                                      6378257556/amazon-frontend:latest
+                                        
+                                        ══════════════════════════════════════════════════════════════════════
+                                                               DEPLOYMENT STAGE
+                                        ══════════════════════════════════════════════════════════════════════
+                                        
+                                                                        │
+                                                                        │ SSH using jenkins-k3s Key
+                                                                        ▼
+                                            
+                                                              ┌──────────────────────┐
+                                                              │ Kubernetes Validation│
+                                                              └──────────┬───────────┘
+                                                                         │
+                                                                         ▼
+                                            
+                                                              ┌──────────────────────┐
+                                                              │ Rollout Restart      │
+                                                              │ Backend Deployment   │
+                                                              └──────────┬───────────┘
+                                                                         │
+                                                                         ▼
+                                            
+                                                              ┌──────────────────────┐
+                                                              │ Rollout Restart      │
+                                                              │ Frontend Deployment  │
+                                                              └──────────┬───────────┘
+                                                                         │
+                                                                         ▼
+                                            
+                                                              ┌──────────────────────┐
+                                                              │ Verify Deployments   │
+                                                              └──────────┬───────────┘
+                                                                         │
+                                                                         ▼
+                                            
+                                                              ┌──────────────────────┐
+                                                              │ Verify HPA           │
+                                                              └──────────┬───────────┘
+                                                                         │
+                                                                         ▼
+                                            
+                                                              ┌──────────────────────┐
+                                                              │ Smoke Testing        │
+                                                              └──────────┬───────────┘
+                                                                         │
+                                                                         ▼
+                                            
+                                        ══════════════════════════════════════════════════════════════════════
+                                                                K3s KUBERNETES
+                                                                  (15.206.14.85)
+                                        ══════════════════════════════════════════════════════════════════════
+                                        
+                                                                        amazon-clone namespace
+                                                    
+                                                            amazon-frontend Deployment
+                                                                        │
+                                                                        ▼
+                                                                Frontend Service
+                                                                        │
+                                                                        ▼
+                                                                 NGINX Ingress
+                                                                        │
+                                                                        ▼
+                                                              http://15.206.14.85
+                                                                        │
+                                                                        ▼
+                                                                 Amazon Clone UI
+                                                                        │
+                                                                        ▼
+                                                             amazon-backend Deployment
+                                                                        │
+                                                                        ▼
+                                                                Backend Service
+                                                    
+                                        ══════════════════════════════════════════════════════════════════════
+                                                                AUTO SCALING (HPA)
+                                        ══════════════════════════════════════════════════════════════════════
+                                        
+                                                                amazon-frontend HPA
+                                                                Min: 1 | Max: 5
+                                                                
+                                                                amazon-backend HPA
+                                                                Min: 1 | Max: 5
+                                        
+                                        ══════════════════════════════════════════════════════════════════════
+                                                                MONITORING STACK
+                                        ══════════════════════════════════════════════════════════════════════
+                                        
+                                                                Node Exporter
+                                                                      │
+                                                                      ▼
+                                                                kube-state-metrics
+                                                                      │
+                                                                      ▼
+                                                                Prometheus
+                                                                      │
+                                                                      ▼
+                                                                Grafana
+                                                                
+                                                                Grafana:
+                                                                http://15.206.14.85/grafana
+                                                                
+                                                                Prometheus:
+                                                                http://15.206.14.85:31907
+                                                                
+                                                                Node Exporter:
+                                                                http://15.206.14.85:30779/metrics
+                                        
+                                        ══════════════════════════════════════════════════════════════════════
+                                                             NOTIFICATION STAGE
+                                        ══════════════════════════════════════════════════════════════════════
+                                        
+                                                              Email Success
+                                                              Email Failure
+                                                              Email Unstable
+                                                              ```
 
 
 
@@ -281,83 +281,329 @@ The architecture is designed to ensure that only secure, validated, and tested a
 
 ---
 
-## 📊 Architecture Diagram
+# 🛠️ Tools & Technologies Demonstration
 
-![Architecture Diagram](ADD_ARCHITECTURE_DIAGRAM_LINK_HERE)
+This project integrates multiple DevSecOps, Security, Containerization, Orchestration, and Monitoring tools to automate the complete Software Development Lifecycle (SDLC).
 
 ---
 
+# ☁️ AWS EC2
 
-## 🏢 Infrastructure Components
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" width="120"/>
 
-### GitHub
+### Purpose
 
-GitHub serves as the central source code repository. Developers push code changes to GitHub, which automatically triggers the Jenkins pipeline using GitHub Webhooks.
+AWS EC2 instances were used to host:
 
-### Jenkins
+* Jenkins Server
+* SonarQube
+* K3s Kubernetes Cluster
+* Monitoring Stack
 
-Jenkins acts as the CI/CD orchestrator responsible for:
+### Screenshot
 
-* Source Code Checkout
-* Security Validation
-* Docker Build Automation
-* Deployment Automation
-* Notification Management
+![AWS EC2](images/aws-ec2.png)
 
-### SonarQube
+---
 
-SonarQube performs static code analysis and evaluates:
+# 🐙 GitHub
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" width="80"/>
+
+### Purpose
+
+GitHub was used as the source code repository.
+
+### Features Used
+
+* Source Code Management
+* GitHub Webhooks
+* Branch Management
+
+### Screenshot
+
+![GitHub Repository](images/github-repository.png)
+
+---
+
+# 🔄 Jenkins
+
+<img src="https://www.jenkins.io/images/logos/jenkins/jenkins.svg" width="90"/>
+
+### Purpose
+
+Jenkins automates the complete CI/CD workflow.
+
+### Pipeline Stages
+
+* Checkout
+* SonarQube Analysis
+* Security Scanning
+* Docker Build
+* Docker Hub Push
+* Kubernetes Deployment
+
+### Screenshot
+
+![Jenkins Pipeline](images/jenkins-pipeline.png)
+
+---
+
+# 🔍 SonarQube
+
+<img src="https://www.svgrepo.com/show/354365/sonarqube.svg" width="90"/>
+
+### Purpose
+
+Performs Static Application Security Testing (SAST).
+
+### Analysis Includes
 
 * Bugs
 * Vulnerabilities
 * Security Hotspots
 * Code Smells
-* Maintainability Issues
+* Quality Gates
 
-### OWASP Dependency Check
+### Screenshot
 
-OWASP Dependency Check performs Software Composition Analysis (SCA) to identify vulnerable third-party dependencies used within the application.
-
-### Trivy
-
-Trivy scans both the source code filesystem and Docker images for:
-
-* Known Vulnerabilities
-* Secrets
-* Misconfigurations
-* Package Security Issues
-
-### Docker
-
-Docker packages the frontend and backend applications into lightweight and portable containers that can be deployed consistently across environments.
-
-### Docker Hub
-
-Docker Hub acts as the container registry used to store and distribute application images.
-
-### K3s Kubernetes
-
-K3s is used as the orchestration platform responsible for:
-
-* Container Scheduling
-* High Availability
-* Scaling
-* Self-Healing
-* Rolling Updates
-
-### NGINX Ingress Controller
-
-NGINX Ingress Controller manages incoming traffic and routes requests to the appropriate backend services.
-
-### Prometheus
-
-Prometheus continuously collects infrastructure and application metrics.
-
-### Grafana
-
-Grafana provides centralized dashboards for visualizing system health, resource utilization, and application performance.
+![SonarQube Dashboard](images/sonarqube-dashboard.png)
 
 ---
+
+# 📦 NPM Audit
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/npm/npm-original-wordmark.svg" width="100"/>
+
+### Purpose
+
+Scans frontend dependencies for known vulnerabilities.
+
+### Validation
+
+* Critical Vulnerabilities
+* High Vulnerabilities
+* Dependency Issues
+
+### Screenshot
+
+![NPM Audit](images/npm-audit.png)
+
+---
+
+# 🛡️ OWASP Dependency Check
+
+<img src="https://owasp.org/assets/images/logo.png" width="90"/>
+
+### Purpose
+
+Performs Software Composition Analysis (SCA).
+
+### Detects
+
+* Vulnerable Dependencies
+* Known CVEs
+* Security Risks
+
+### Screenshot
+
+![OWASP Report](images/owasp-report.png)
+
+---
+
+# 🔒 Trivy
+
+<img src="https://trivy.dev/v0.40/imgs/logo.png" width="120"/>
+
+### Purpose
+
+Performs vulnerability scanning.
+
+### Scans
+
+* Filesystem
+* Docker Images
+* Misconfigurations
+* Secrets
+
+### Screenshot
+
+![Trivy Scan](images/trivy-report.png)
+
+---
+
+# 🐳 Docker
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" width="90"/>
+
+### Purpose
+
+Containerizes frontend and backend applications.
+
+### Docker Images
+
+```text
+amazon-backend
+
+amazon-frontend
+```
+
+### Screenshot
+
+![Docker Build](images/docker-build.png)
+
+---
+
+# 📦 Docker Hub
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" width="90"/>
+
+### Purpose
+
+Stores Docker images.
+
+### Published Images
+
+```text
+6378257556/amazon-backend:latest
+
+6378257556/amazon-frontend:latest
+```
+
+### Screenshot
+
+![Docker Hub](images/dockerhub-images.png)
+
+---
+
+# ☸️ K3s Kubernetes
+
+<img src="https://raw.githubusercontent.com/k3s-io/k3s/master/docs/static/logo.png" width="90"/>
+
+### Purpose
+
+Hosts the production workloads.
+
+### Features Used
+
+* Deployments
+* Services
+* Ingress
+* HPA
+
+### Screenshot
+
+![Kubernetes](images/kubernetes-cluster.png)
+
+---
+
+# 🌐 NGINX Ingress Controller
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nginx/nginx-original.svg" width="90"/>
+
+### Purpose
+
+Routes external traffic to frontend and backend services.
+
+### Screenshot
+
+![Ingress](images/nginx-ingress.png)
+
+---
+
+# 📈 Horizontal Pod Autoscaler (HPA)
+
+### Purpose
+
+Automatically scales application pods.
+
+### Configuration
+
+```text
+Frontend:
+Min: 1
+Max: 5
+
+Backend:
+Min: 1
+Max: 5
+```
+
+### Screenshot
+
+![HPA](images/hpa-status.png)
+
+---
+
+# 📊 Prometheus
+
+<img src="https://prometheus.io/assets/prometheus_logo_grey.svg" width="90"/>
+
+### Purpose
+
+Collects Kubernetes and infrastructure metrics.
+
+### Screenshot
+
+![Prometheus](images/prometheus-dashboard.png)
+
+---
+
+# 📉 Grafana
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg" width="90"/>
+
+### Purpose
+
+Visualizes monitoring metrics.
+
+### Dashboard Includes
+
+* CPU Usage
+* Memory Usage
+* Disk Usage
+* Network Usage
+* Kubernetes Metrics
+
+### Screenshot
+
+![Grafana Dashboard](images/grafana-dashboard.png)
+
+---
+
+# 📧 Email Notifications
+
+### Purpose
+
+Automatically sends pipeline execution status.
+
+### Notification Types
+
+* Success
+* Failure
+* Unstable
+
+### Screenshot
+
+![Email Notification](images/email-notification.png)
+
+---
+
+# 🌐 Running Application
+
+### Purpose
+
+Final production deployment running on K3s Kubernetes.
+
+### Application URL
+
+```text
+http://15.206.14.85
+```
+
+### Screenshot
+
+![Amazon Clone Application](images/application-dashboard.png)
 
 ## 🎯 Security Flow
 
@@ -382,65 +628,6 @@ Deployment
 ```
 
 This ensures that security vulnerabilities are identified and addressed before reaching production.
-
-
-# 🏆 Project Highlights
-
-This project demonstrates the implementation of a complete **Enterprise DevSecOps CI/CD Pipeline** for a React and Django based Ecommerce Inventory Management Application.
-
-### Implemented Features
-
-✅ GitHub Webhook Integration
-
-✅ Jenkins CI/CD Automation
-
-✅ SonarQube Static Code Analysis
-
-✅ Quality Gate Validation
-
-✅ npm Audit Security Checks
-
-✅ OWASP Dependency Check
-
-✅ Trivy Filesystem Scanning
-
-✅ Trivy Docker Image Scanning
-
-✅ Docker Image Build & Push
-
-✅ Docker Hub Integration
-
-✅ K3s Kubernetes Deployment
-
-✅ NGINX Ingress Controller
-
-✅ Horizontal Pod Autoscaler (HPA)
-
-✅ Prometheus Monitoring
-
-✅ Grafana Dashboard
-
-✅ Node Exporter Metrics
-
-✅ Automated Smoke Testing
-
-✅ HTML Email Notifications
-
----
-
-# 💼 Resume Highlights
-
-### DevSecOps Engineer Project
-
-* Designed and implemented an end-to-end DevSecOps CI/CD pipeline using Jenkins, SonarQube, OWASP Dependency Check, Trivy, Docker, Kubernetes, Prometheus, and Grafana.
-* Automated code quality analysis, security scanning, container image creation, Docker Hub publishing, Kubernetes deployment, and deployment verification.
-* Deployed React and Django applications on a K3s Kubernetes cluster using NGINX Ingress Controller.
-* Configured Horizontal Pod Autoscaling (HPA) for automatic workload scaling.
-* Implemented monitoring and observability using Prometheus, Grafana, Node Exporter, and kube-state-metrics.
-* Integrated automated email notifications for build success and failure reporting.
-* Applied DevSecOps best practices by shifting security left in the CI/CD pipeline.
-
----
 
 # 🎯 Skills Demonstrated
 
