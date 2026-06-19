@@ -1,0 +1,14 @@
+services:
+  backend:
+    image: 6378257556/amazon-backend:latest
+    container_name: amazon-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+
+  frontend:
+    image: 6378257556/amazon-frontend:latest
+    container_name: amazon-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"

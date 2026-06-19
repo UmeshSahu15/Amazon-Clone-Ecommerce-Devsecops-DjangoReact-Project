@@ -41,7 +41,7 @@ COPY --from=build-stage ./code/Frontend/ecommerce_inventory/build/index.html /co
 RUN python ./Backend/EcommerceInventory/manage.py collectstatic --no-input
 
 #Expose the port
-EXPOSE 80
+EXPOSE 8000
 
 WORKDIR /code/Backend/EcommerceInventory
 
