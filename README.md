@@ -289,8 +289,6 @@ This project integrates multiple DevSecOps, Security, Containerization, Orchestr
 
 # ☁️ AWS EC2
 
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" width="120"/>
-
 ### Purpose
 
 AWS EC2 instances were used to host:
@@ -302,7 +300,8 @@ AWS EC2 instances were used to host:
 
 ### Screenshot
 
-![AWS EC2](images/aws-ec2.png)
+<Img width="1920" height="1080" alt="2026-06-19 (1)" src="https://github.com/user-attachments/assets/8032b6b1-ec4a-44b7-88eb-c4e24de10f42" />
+
 
 ---
 
