@@ -1,6 +1,7 @@
+
 <div align="center">
 
-<img src="ADD_YOUR_BANNER_IMAGE_LINK_HERE" alt="Amazon Clone DevSecOps Project Banner" width="100%">
+<img width="1536" height="1024" alt="ChatGPT Image Jun 19, 2026, 12_51_00 PM" src="https://github.com/user-attachments/assets/f271bc1b-c5c4-4d51-a348-02ac30061c1c" />
 
 # 🚀 Amazon Clone Ecommerce Inventory Management System
 
