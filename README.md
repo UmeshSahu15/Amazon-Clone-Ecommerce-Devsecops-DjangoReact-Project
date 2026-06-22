@@ -270,8 +270,489 @@ The key objectives of this project are:
 * Implement scalable container orchestration using Kubernetes.
 * Demonstrate real-world DevSecOps practices used in enterprise environments.
 
----
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+🔄🔄 Pipeline 🔄🔄
+
+        pipeline {
+agent any
+
+
+tools {
+    jdk 'jdk17'
+    nodejs 'node16'
+}
+
+environment {
+    NVD_API_KEY = credentials('NVD-API-KEY')
+}
+
+stages {
+
+    stage('Clean Workspace') {
+        steps {
+            cleanWs()
+        }
+    }
+
+    stage('Checkout from Git') {
+        steps {
+            git(
+                branch: 'main',
+                url: 'https://github.com/UmeshSahu15/Amazon-Clone-Ecommerce-Devsecops-DjangoReact-Project.git'
+            )
+        }
+    }
+
+    stage('SonarQube Analysis') {
+        steps {
+            script {
+                def scannerHome = tool 'sonar-scanner'
+
+                withSonarQubeEnv('sonar-server') {
+                    sh """
+                        ${scannerHome}/bin/sonar-scanner \
+                        -Dsonar.projectKey=AmazonClone \
+                        -Dsonar.projectName=AmazonClone \
+                        -Dsonar.sources=.
+                    """
+                }
+            }
+        }
+    }
+
+    stage('Quality Gate') {
+        steps {
+            timeout(time: 10, unit: 'MINUTES') {
+                waitForQualityGate abortPipeline: true
+            }
+        }
+    }
+
+    stage('Install Frontend Dependencies') {
+        steps {
+            dir('Frontend/ecommerce_inventory') {
+                sh 'npm install'
+            }
+        }
+    }
+    
+    stage('npm Audit') {
+    steps {
+        dir('Frontend/ecommerce_inventory') {
+            sh '''
+                npm audit --audit-level=high || true
+            '''
+        }
+    }
+}
+
+    stage('Install Backend Dependencies') {
+        steps {
+            dir('Backend/EcommerceInventory') {
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
+            }
+        }
+    }
+
+  stage('OWASP Dependency Check') {
+    steps {
+
+     dependencyCheck(
+    odcInstallation: 'DP-Check',
+    additionalArguments: """
+        --scan .
+        --format XML
+        --nvdApiDelay 3500
+        --nvdApiKey ${NVD_API_KEY}
+    """,
+    stopBuild: false
+)
+
+    }
+}
+    stage('Dependency Check Report') {
+        steps {
+            dependencyCheckPublisher(
+                pattern: '**/dependency-check-report.xml'
+            )
+        }
+    }
+
+    stage('Trivy Filesystem Scan') {
+        steps {
+            sh '''
+                trivy fs . \
+                --severity HIGH,CRITICAL \
+                --exit-code 0
+            '''
+        }
+    }
+
+
+stage('Build Backend Docker Image') {
+    steps {
+        sh '''
+            docker build \
+            -t amazon-backend:latest \
+            -f Backend/Dockerfile \
+            Backend
+        '''
+    }
+}
+
+stage('Build Frontend Docker Image') {
+    steps {
+        sh '''
+            docker build \
+            -t amazon-frontend:latest \
+            -f Frontend/Dockerfile \
+            Frontend
+        '''
+    }
+}
+
+
+stage('Trivy Backend Image Scan') {
+    steps {
+        sh '''
+            trivy image amazon-backend:latest \
+            --severity HIGH,CRITICAL \
+            --exit-code 0
+        '''
+    }
+}
+
+stage('Trivy Frontend Image Scan') {
+    steps {
+        sh '''
+            trivy image amazon-frontend:latest \
+            --severity HIGH,CRITICAL \
+            --exit-code 0
+        '''
+    }
+}
+
+ stage('Docker Hub Login') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'docker',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    '''
+                }
+            }
+        }
+
+        stage('Push Backend Image') {
+            steps {
+                sh '''
+                    docker tag amazon-backend:latest 6378257556/amazon-backend:latest
+                    docker push 6378257556/amazon-backend:latest
+                '''
+            }
+        }
+
+        stage('Push Frontend Image') {
+            steps {
+                sh '''
+                    docker tag amazon-frontend:latest 6378257556/amazon-frontend:latest
+                    docker push 6378257556/amazon-frontend:latest
+                '''
+            }
+        }
+stage('Kubernetes Manifest Validation') {
+    steps {
+        sh '''
+            ssh -o StrictHostKeyChecking=no \
+            -i ~/.ssh/jenkins-k3s \
+            ubuntu@15.206.14.85 \
+            "sudo kubectl get deployment -n amazon-clone"
+        '''
+    }
+}        
+stage('Deploy to K3s') {
+    steps {
+        sh '''
+            ssh -o StrictHostKeyChecking=no \
+            -i ~/.ssh/jenkins-k3s \
+            ubuntu@15.206.14.85 \
+            "sudo kubectl rollout restart deployment amazon-backend -n amazon-clone && \
+             sudo kubectl rollout status deployment amazon-backend -n amazon-clone"
+
+            ssh -o StrictHostKeyChecking=no \
+            -i ~/.ssh/jenkins-k3s \
+            ubuntu@15.206.14.85 \
+            "sudo kubectl rollout restart deployment amazon-frontend -n amazon-clone && \
+             sudo kubectl rollout status deployment amazon-frontend -n amazon-clone"
+        '''
+    }
+}
+stage('Verify Kubernetes Deployments') {
+    steps {
+        sh '''
+            ssh -o StrictHostKeyChecking=no \
+            -i ~/.ssh/jenkins-k3s \
+            ubuntu@15.206.14.85 \
+            "sudo kubectl rollout status deployment amazon-backend -n amazon-clone"
+
+            ssh -o StrictHostKeyChecking=no \
+            -i ~/.ssh/jenkins-k3s \
+            ubuntu@15.206.14.85 \
+            "sudo kubectl rollout status deployment amazon-frontend -n amazon-clone"
+
+            ssh -o StrictHostKeyChecking=no \
+            -i ~/.ssh/jenkins-k3s \
+            ubuntu@15.206.14.85 \
+            "sudo kubectl get pods -n amazon-clone"
+        '''
+    }
+}
+stage('Verify HPA') {
+    steps {
+        sh '''
+            ssh -o StrictHostKeyChecking=no \
+            -i ~/.ssh/jenkins-k3s \
+            ubuntu@15.206.14.85 \
+            "sudo kubectl get hpa -n amazon-clone"
+        '''
+    }
+}
+stage('Smoke Test') {
+    steps {
+        sh '''
+            sleep 30
+
+            curl -f http://15.206.14.85 > /dev/null
+
+            curl -f http://15.206.14.85/manage/product > /dev/null
+        '''
+    }
+}
+}
+
+post {
+
+    always {
+        archiveArtifacts(
+            artifacts: '**/*.xml,**/*.html,**/*.json',
+            allowEmptyArchive: true
+        )
+    }
+
+    success {
+        emailext(
+            mimeType: 'text/html',
+            subject: "✅ SUCCESS | ${JOB_NAME} #${BUILD_NUMBER}",
+            to: "umeshjidevops015@gmail.com",
+            body: """
+<html>
+<body style="font-family: Arial, sans-serif; background:#f4f6f9; padding:20px;">
+
+<div style="background:#28a745;color:white;padding:20px;border-radius:10px;text-align:center;">
+    <h1>✅ BUILD SUCCESSFUL</h1>
+    <h2>${JOB_NAME} #${BUILD_NUMBER}</h2>
+</div>
+
+<br>
+
+<table style="border-collapse:collapse;width:100%;background:white;">
+    <tr>
+        <td style="padding:10px;border:1px solid #ddd;"><b>Job Name</b></td>
+        <td style="padding:10px;border:1px solid #ddd;">${JOB_NAME}</td>
+    </tr>
+
+    <tr>
+        <td style="padding:10px;border:1px solid #ddd;"><b>Build Number</b></td>
+        <td style="padding:10px;border:1px solid #ddd;">${BUILD_NUMBER}</td>
+    </tr>
+
+    <tr>
+        <td style="padding:10px;border:1px solid #ddd;"><b>Build Duration</b></td>
+        <td style="padding:10px;border:1px solid #ddd;">${currentBuild.durationString}</td>
+    </tr>
+
+    <tr>
+        <td style="padding:10px;border:1px solid #ddd;"><b>Status</b></td>
+        <td style="padding:10px;border:1px solid #ddd;color:green;"><b>SUCCESS</b></td>
+    </tr>
+
+    <tr>
+        <td style="padding:10px;border:1px solid #ddd;"><b>Build URL</b></td>
+        <td style="padding:10px;border:1px solid #ddd;">
+            <a href="${BUILD_URL}">${BUILD_URL}</a>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="padding:10px;border:1px solid #ddd;"><b>Console Log</b></td>
+        <td style="padding:10px;border:1px solid #ddd;">
+            <a href="${BUILD_URL}console">View Console Log</a>
+        </td>
+    </tr>
+</table>
+
+<br>
+
+<div style="background:#d4edda;padding:15px;border-left:5px solid green;">
+    <b>Deployment Completed Successfully 🚀</b><br><br>
+    ✓ SonarQube Analysis<br>
+    ✓ Quality Gate Passed<br>
+    ✓ npm Audit Completed<br>
+    ✓ OWASP Dependency Check<br>
+    ✓ Trivy Filesystem Scan<br>
+    ✓ Docker Image Build<br>
+    ✓ Docker Hub Push<br>
+    ✓ Kubernetes Deployment (K3s)<br>
+    ✓ Smoke Test Passed
+</div>
+
+<br>
+
+<center>
+    <a href="${BUILD_URL}"
+    style="background:#28a745;color:white;padding:12px 20px;text-decoration:none;border-radius:5px;">
+    View Build Details
+    </a>
+</center>
+
+</body>
+</html>
+"""
+        )
+
+        echo 'Pipeline completed successfully.'
+    }
+
+    failure {
+        emailext(
+            mimeType: 'text/html',
+            subject: "❌ FAILED | ${JOB_NAME} #${BUILD_NUMBER}",
+            to: "umeshjidevops015@gmail.com",
+            body: """
+<html>
+<body style="font-family: Arial, sans-serif; background:#f4f6f9; padding:20px;">
+
+<div style="background:#dc3545;color:white;padding:20px;border-radius:10px;text-align:center;">
+    <h1>❌ BUILD FAILED</h1>
+    <h2>${JOB_NAME} #${BUILD_NUMBER}</h2>
+</div>
+
+<br>
+
+<table style="border-collapse:collapse;width:100%;background:white;">
+    <tr>
+        <td style="padding:10px;border:1px solid #ddd;"><b>Job Name</b></td>
+        <td style="padding:10px;border:1px solid #ddd;">${JOB_NAME}</td>
+    </tr>
+
+    <tr>
+        <td style="padding:10px;border:1px solid #ddd;"><b>Build Number</b></td>
+        <td style="padding:10px;border:1px solid #ddd;">${BUILD_NUMBER}</td>
+    </tr>
+
+    <tr>
+        <td style="padding:10px;border:1px solid #ddd;"><b>Build Duration</b></td>
+        <td style="padding:10px;border:1px solid #ddd;">${currentBuild.durationString}</td>
+    </tr>
+
+    <tr>
+        <td style="padding:10px;border:1px solid #ddd;"><b>Status</b></td>
+        <td style="padding:10px;border:1px solid #ddd;color:red;"><b>FAILED</b></td>
+    </tr>
+
+    <tr>
+        <td style="padding:10px;border:1px solid #ddd;"><b>Build URL</b></td>
+        <td style="padding:10px;border:1px solid #ddd;">
+            <a href="${BUILD_URL}">${BUILD_URL}</a>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="padding:10px;border:1px solid #ddd;"><b>Console Log</b></td>
+        <td style="padding:10px;border:1px solid #ddd;">
+            <a href="${BUILD_URL}console">View Console Log</a>
+        </td>
+    </tr>
+</table>
+
+<br>
+
+<div style="background:#f8d7da;padding:15px;border-left:5px solid red;">
+    <b>Action Required ⚠</b><br><br>
+    Pipeline execution failed.<br>
+    Please review the Jenkins console logs and identify the failed stage.
+</div>
+
+<br>
+
+<center>
+    <a href="${BUILD_URL}console"
+    style="background:#dc3545;color:white;padding:12px 20px;text-decoration:none;border-radius:5px;">
+    Open Console Log
+    </a>
+</center>
+
+</body>
+</html>
+"""
+        )
+
+        echo 'Pipeline failed.'
+    }
+
+    unstable {
+        emailext(
+            mimeType: 'text/html',
+            subject: "⚠ UNSTABLE | ${JOB_NAME} #${BUILD_NUMBER}",
+            to: "umeshjidevops015@gmail.com",
+            body: """
+<html>
+<body style="font-family: Arial, sans-serif; background:#f4f6f9; padding:20px;">
+
+<div style="background:#ffc107;color:black;padding:20px;border-radius:10px;text-align:center;">
+    <h1>⚠ BUILD UNSTABLE</h1>
+    <h2>${JOB_NAME} #${BUILD_NUMBER}</h2>
+</div>
+
+<br>
+
+<p>
+Build completed but one or more quality/security checks generated warnings.
+</p>
+
+<ul>
+    <li>OWASP Dependency Check</li>
+    <li>Trivy Scan</li>
+    <li>Quality Gate Warning</li>
+</ul>
+
+<p>
+<a href="${BUILD_URL}">Open Build Details</a>
+</p>
+
+</body>
+</html>
+"""
+        )
+
+        echo 'Pipeline unstable.'
+    }
+}
+}
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------->
 
 # 🏗️ Solution Architecture
 
