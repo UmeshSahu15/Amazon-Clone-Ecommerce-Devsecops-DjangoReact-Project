@@ -2,7 +2,7 @@
 <div align="center">
 
 
-# 🚀 Amazon Clone Ecommerce Inventory Management System
+#  Amazon Clone Ecommerce Inventory Management System
 
 ### End-to-End DevSecOps CI/CD Pipeline with Kubernetes, Monitoring & Security Automation
 
